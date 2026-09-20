@@ -2304,7 +2304,9 @@ body.tv-page:hover .tv-controls,
   .board[data-count="3"], .board[data-count="4"] { grid-template-columns: minmax(0, 1fr); }
 
   /* Sidebar jadi drawer */
-  .admin-layout {
+  .admin-layout,
+  .admin-layout[data-sidebar="open"],
+  .admin-layout[data-sidebar="closed"] {
     grid-template-columns: minmax(0, 1fr);
   }
   .sidebar {
@@ -2334,6 +2336,58 @@ body.tv-page:hover .tv-controls,
   }
 }
 @media (max-width: 808px) {
+  /* Header admin: jangan biarkan kontrol lapangan mendorong halaman ke kanan. */
+  .admin-topbar {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: var(--margin-s) var(--margin-m);
+    padding: var(--margin-s) var(--margin-m);
+  }
+  .admin-topbar__title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .admin-topbar__tools {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+    margin-left: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--margin-s);
+  }
+  .admin-topbar__meja {
+    grid-column: 1 / -1;
+    min-width: 0;
+    justify-content: space-between;
+  }
+  .admin-topbar__meja .segmented { flex-shrink: 0; }
+  .admin-topbar__tools .clock {
+    align-self: center;
+    font-size: var(--text-m);
+  }
+  .admin-topbar__tools .btn {
+    min-height: 38px;
+    padding-inline: var(--margin-l);
+  }
+  .tab-content,
+  .admin-content .board {
+    padding: var(--margin-m) var(--margin-s) var(--margin-3xl);
+  }
+
+  /* Klasemen tetap terbaca tanpa membuat horizontal overflow. */
+  .standings-grid { gap: var(--margin-m); }
+  .standings-card { min-width: 0; }
+  .standings-table { table-layout: fixed; font-size: 10px; }
+  .standings-table th,
+  .standings-table td { padding: 6px 3px; }
+  .standings-table th:nth-child(2),
+  .standings-table td:nth-child(2) { width: 34%; }
+  .standings-table td.name { gap: 4px; }
+  .standings-logo { width: 22px; height: 22px; }
+
   .appbar { flex-wrap: wrap; gap: var(--margin-s); padding: var(--margin-s) var(--margin-l); }
   .brand__meta { white-space: normal; }
   .board { padding: var(--margin-l); }
@@ -2539,6 +2593,13 @@ body.tv-page:hover .tv-controls,
 
 /* ── HP kecil (≤ 480px) ────────────────────────────────────────────────── */
 @media (max-width: 480px) {
+  .admin-topbar__title { font-size: var(--text-m); }
+  .admin-topbar__meja .u-eyebrow { font-size: 9px; }
+  .admin-topbar__tools .btn {
+    padding-inline: var(--margin-m);
+    font-size: var(--text-xs);
+  }
+
   .brand__meta { display: none; }    /* sembunyikan meta, hemat ruang */
 
   .appbar__tools {

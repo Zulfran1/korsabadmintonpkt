@@ -5,6 +5,13 @@ export function bindAdminSidebar(doc = document) {
   const toggle = doc.getElementById('toggle-sidebar');
   if (!layout || !toggle || toggle.dataset.sidebarBound === 'true') return false;
 
+  /* Di layar sempit sidebar adalah drawer. Mulai dalam keadaan tertutup agar
+     tidak menutupi konten saat halaman pertama kali dibuka di HP. */
+  const view = doc.defaultView;
+  if (view?.matchMedia('(max-width: 1080px)').matches) {
+    layout.dataset.sidebar = 'closed';
+  }
+
   const syncA11y = () => {
     const open = layout.dataset.sidebar !== 'closed';
     toggle.setAttribute('aria-expanded', String(open));
@@ -21,7 +28,6 @@ export function bindAdminSidebar(doc = document) {
   });
 
   doc.addEventListener('click', event => {
-    const view = doc.defaultView;
     if (event.target === layout && layout.dataset.sidebar === 'open' &&
         view?.matchMedia('(max-width: 1080px)').matches) {
       layout.dataset.sidebar = 'closed';
