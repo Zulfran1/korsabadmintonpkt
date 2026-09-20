@@ -7,18 +7,18 @@
    LOGO KONTINGEN
    ═══════════════════════════════════════════════════════════════════════════ */
 export const LOGOS = {
-  "BIODEX":     "assets/logos/biodex.png",
-  "AMONIAK":    "assets/logos/amoniak.png",
-  "NPK KAKAO":  "assets/logos/npk-kakao.png",
-  "NITREA":     "assets/logos/nitrea.png",
-  "NPK JOS":    "assets/logos/npk-jos.png",
-  "PRECIPALM":  "assets/logos/precipalm.png",
-  "HUMACTIVE":  "assets/logos/humactive.png",
-  "ECOFERT":    "assets/logos/ecofert.png",
+  "BIODEX":     "assets/logos/biodex.png?v=20260920-opt",
+  "AMONIAK":    "assets/logos/amoniak.png?v=20260920-opt",
+  "NPK KAKAO":  "assets/logos/npk-kakao.png?v=20260920-opt",
+  "NITREA":     "assets/logos/nitrea.png?v=20260920-opt",
+  "NPK JOS":    "assets/logos/npk-jos.png?v=20260920-opt",
+  "PRECIPALM":  "assets/logos/precipalm.png?v=20260920-opt",
+  "HUMACTIVE":  "assets/logos/humactive.png?v=20260920-opt",
+  "ECOFERT":    "assets/logos/ecofert.png?v=20260920-opt",
 };
 
-export const KORSA_ON_LIGHT = "assets/logos/korsa-on-light.png";
-export const KORSA_ON_DARK  = "assets/logos/korsa-on-dark.png";
+export const KORSA_ON_LIGHT = "assets/logos/korsa-on-light.png?v=20260920-opt";
+export const KORSA_ON_DARK  = "assets/logos/korsa-on-dark.png?v=20260920-opt";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    INFO EVENT

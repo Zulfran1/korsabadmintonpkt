@@ -26,6 +26,9 @@ let openEditorMeja = null;
 let openPopSide = null;
 let activeTab = 'meja';
 let clockStarted = false;
+let renderFrame = 0;
+let renderedSidebarTab = null;
+let renderedActiveMeja = null;
 
 const TABS = [
   { id: 'meja',       label: 'Lapangan',   icon: '🏓' },
@@ -46,7 +49,10 @@ export function initAdmin() {
   renderAll();
   startClock();
 
-  subscribe(() => renderAll());
+  subscribe(scheduleRenderAll, { immediate: false });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) scheduleRenderAll();
+  });
 
   /* Klik global */
   document.addEventListener('click', e => {
@@ -69,6 +75,15 @@ export function initAdmin() {
     if (e.key !== 'Escape') return;
     if (openPopSide) { closeTeamPop(); return; }
     if (openEditorMeja !== null) { closeCategoryEditor(); return; }
+  });
+}
+
+function scheduleRenderAll() {
+  if (document.hidden) return;
+  if (renderFrame) return;
+  renderFrame = requestAnimationFrame(() => {
+    renderFrame = 0;
+    renderAll();
   });
 }
 
@@ -98,6 +113,10 @@ function switchAdminTab(name) {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 function renderAll() {
+  if (renderFrame) {
+    cancelAnimationFrame(renderFrame);
+    renderFrame = 0;
+  }
   renderTableCount();
   renderSidebar();
 
@@ -151,6 +170,7 @@ function renderAll() {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 function renderSidebar() {
+  if (renderedSidebarTab === activeTab) return;
   const nav = document.getElementById('sidebar-nav');
   if (nav) {
     nav.innerHTML = TABS.map(t => `
@@ -165,6 +185,7 @@ function renderSidebar() {
   const title = document.getElementById('admin-tab-title');
   const current = TABS.find(t => t.id === activeTab);
   if (title && current) title.textContent = current.label;
+  renderedSidebarTab = activeTab;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -175,10 +196,12 @@ function renderTableCount() {
   const el = document.getElementById('table-count');
   if (!el) return;
   const active = getState().activeMeja;
+  if (renderedActiveMeja === active && el.childElementCount === 4) return;
   el.innerHTML = [1, 2, 3, 4].map(n => `
     <button class="segmented__item" aria-pressed="${n === active}"
             data-role="set-active" data-n="${n}" type="button">${n}</button>
   `).join('');
+  renderedActiveMeja = active;
 }
 
 function renderBoard() {

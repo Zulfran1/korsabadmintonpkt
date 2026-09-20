@@ -5,7 +5,7 @@ import { initState, whenReady } from './state.js';
 import { initDisplay } from './display.js';
 
 async function main() {
-  await initState();
+  await initState({ eager: true });
   await whenReady();
 
   initDisplay();

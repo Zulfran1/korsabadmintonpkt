@@ -1,4 +1,4 @@
-import { initState, setCurrentUser, whenReady } from './state.js';
+import { initState, setCurrentUser, startStatePolling, whenReady } from './state.js';
 import {
   initAdmin,
   renderAdminHeader,
@@ -13,15 +13,19 @@ async function main() {
   renderAdminHeader();
   renderTeamNamesDatalist();
 
-  await initState();
-  await whenReady();
-
+  /* Session dan state tidak saling bergantung. Mulai keduanya bersamaan agar
+     waktu masuk ditentukan request paling lambat, bukan jumlah dua request. */
+  const stateReady = initState({ poll: false });
   const user = await requireSession({
     role: 'admin',
     target: document.body,
     onLogin: () => location.reload(),
   });
   if (!user) return;
+
+  await stateReady;
+  await whenReady();
+  startStatePolling();
 
   setCurrentUser(user);
   initAdmin();

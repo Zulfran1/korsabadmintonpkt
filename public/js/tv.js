@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    TV MEJA — auto-scroll loop seamless
    ═══════════════════════════════════════════════════════════════════════════ */
-import { getTable, getState, subscribe } from './state.js';
+import { getTable, subscribe } from './state.js';
 import { MATCH_BY_ID, KORSA_ON_DARK } from './config.js';
 import { esc, plateHTML, clockText } from './util.js';
 
@@ -13,7 +13,8 @@ let assignedMeja = null;
 let clockTimer = null;
 let scrollRAF = null;
 let scrollPauseUntil = 0;
-let lastVersion = -1;
+let renderedTableKey = '';
+let renderFrame = 0;
 
 const SCROLL_SPEED = 0.5;      // pixel per frame (~30px/detik @60fps)
 const LOOP_PAUSE_MS = 2000;    // pause di akhir sebelum loop
@@ -30,18 +31,22 @@ export function initTV(meja) {
   startClock();
   renderTV();
 
-  lastVersion = getState()?.version ?? -1;
-
   subscribe(() => {
-    const s = getState();
-    const version = s?.version ?? 0;
-    if (version === lastVersion) return;
-    lastVersion = version;
-    renderTV();
+    const nextKey = JSON.stringify(getTable(assignedMeja) || null);
+    if (nextKey === renderedTableKey) return;
+    scheduleTVRender();
     scrollPauseUntil = Date.now() + UPDATE_PAUSE_MS;
-  });
+  }, { immediate: false });
 
-  window.addEventListener('resize', () => renderTV());
+  window.addEventListener('resize', scheduleTVRender);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (scrollRAF) cancelAnimationFrame(scrollRAF);
+      scrollRAF = null;
+      return;
+    }
+    scheduleTVRender();
+  });
 
   /* ── Fullscreen ─────────────────────────────────────────────────── */
   const btnEnter = document.getElementById('tv-btn-fullscreen');
@@ -62,7 +67,7 @@ export function initTV(meja) {
     if (btnEnter) btnEnter.hidden = isFs;
     if (btnExit)  btnExit.hidden  = !isFs;
     /* Re-render layout supaya ukuran menyesuaikan */
-    requestAnimationFrame(() => renderTV());
+    scheduleTVRender();
   });
 
   /* Tombol F untuk toggle fullscreen */
@@ -74,6 +79,15 @@ export function initTV(meja) {
         document.documentElement.requestFullscreen?.().catch(() => {});
       }
     }
+  });
+}
+
+function scheduleTVRender() {
+  if (document.hidden) return;
+  if (renderFrame) return;
+  renderFrame = requestAnimationFrame(() => {
+    renderFrame = 0;
+    renderTV();
   });
 }
 
@@ -92,8 +106,13 @@ function startClock() {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 function renderTV() {
+  if (renderFrame) {
+    cancelAnimationFrame(renderFrame);
+    renderFrame = 0;
+  }
   const t = getTable(assignedMeja);
   if (!t) return;
+  renderedTableKey = JSON.stringify(t);
   const card = document.getElementById('card');
   if (!card) return;
 
@@ -137,7 +156,6 @@ function renderTV() {
     }
   `;
 
-  startClock();
   requestAnimationFrame(() => setupAutoScroll());
 }
 
@@ -189,23 +207,17 @@ function setupAutoScroll() {
 
 function startScrollLoop(viewport, contentHeight) {
   let lastTs = performance.now();
-  let logCounter = 0;
 
   /* Delay awal sebelum mulai scroll */
   scrollPauseUntil = Date.now() + 1500;
 
   function step(ts) {
+    if (document.hidden) {
+      scrollRAF = null;
+      return;
+    }
     const dt = Math.min(64, ts - lastTs);
     lastTs = ts;
-
-    /* Debug log tiap ~1 detik */
-    logCounter++;
-    if (logCounter % 60 === 0) {
-      console.log('[TV] scrollTop:', Math.round(viewport.scrollTop),
-                  '/ contentHeight:', contentHeight,
-                  '/ pauseLeft:',
-                  Math.max(0, Math.round((scrollPauseUntil - Date.now()) / 1000)) + 's');
-    }
 
     /* Skip gerakan kalau sedang jeda */
     if (Date.now() < scrollPauseUntil) {
@@ -243,7 +255,7 @@ function matchupHTML(t) {
   return `
     <div class="tv-matchup">
       <div class="tv-matchup__team tv-matchup__team--a">
-        ${plateHTML(t.teamA, 'tv-matchup__logo')}
+        ${plateHTML(t.teamA, 'tv-matchup__logo', 'eager')}
         <span class="tv-matchup__name">${esc(t.teamA)}</span>
       </div>
 
@@ -252,7 +264,7 @@ function matchupHTML(t) {
       </div>
 
       <div class="tv-matchup__team tv-matchup__team--b">
-        ${plateHTML(t.teamB, 'tv-matchup__logo')}
+        ${plateHTML(t.teamB, 'tv-matchup__logo', 'eager')}
         <span class="tv-matchup__name">${esc(t.teamB)}</span>
       </div>
     </div>
@@ -280,7 +292,7 @@ function catCardHTML(t, cat) {
 
         <div class="tv-cat__result">
           <div class="tv-cat__winner">
-            ${plateHTML(winnerName, 'tv-cat__plate')}
+            ${plateHTML(winnerName, 'tv-cat__plate', 'eager')}
             <span class="tv-cat__winner-name">${esc(winnerName)}</span>
           </div>
           <div class="tv-cat__rally">${setsHTML}</div>

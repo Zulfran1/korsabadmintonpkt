@@ -9,11 +9,17 @@ import {
 import { MATCH_BY_ID, EVENT, KORSA_ON_LIGHT, KORSA_ON_DARK } from './config.js';
 import { esc, plateHTML, pillHTML, clockText, fitAll, toast } from './util.js';
 
+let renderFrame = 0;
+
 /* ═══════════════════════════════════════════════════════════════════════════
    RENDER
    ═══════════════════════════════════════════════════════════════════════════ */
 
 export function renderDisplay() {
+  if (renderFrame) {
+    cancelAnimationFrame(renderFrame);
+    renderFrame = 0;
+  }
   const grid = document.getElementById('vt-grid');
   if (!grid) return;
 
@@ -28,6 +34,15 @@ export function renderDisplay() {
     fitAll(grid, '.row__name', 12);
     fitAll(grid, '.cell__wait-team span', 12);
     fitAll(grid, '.cell__result-name', 12);
+  });
+}
+
+function scheduleDisplayRender() {
+  if (document.hidden) return;
+  if (renderFrame) return;
+  renderFrame = requestAnimationFrame(() => {
+    renderFrame = 0;
+    renderDisplay();
   });
 }
 
@@ -100,12 +115,12 @@ function bodyWaiting(t, fixture) {
         <div class="cell__wait-label">Akan datang</div>
         <div class="cell__wait-fixture">
           <div class="cell__wait-team">
-            ${plateHTML(t.teamA, '')}
+            ${plateHTML(t.teamA, '', 'eager')}
             <span>${esc(t.teamA)}</span>
           </div>
           <div class="cell__wait-vs">VS</div>
           <div class="cell__wait-team">
-            ${plateHTML(t.teamB, '')}
+            ${plateHTML(t.teamB, '', 'eager')}
             <span>${esc(t.teamB)}</span>
           </div>
         </div>
@@ -127,7 +142,7 @@ function bodyLive(t) {
 
   const row = (name, score, leading) => `
     <div class="row${leading ? ' row--leading' : ''}">
-      ${plateHTML(name, 'row__logo')}
+      ${plateHTML(name, 'row__logo', 'eager')}
       <div class="row__team">
         <div class="row__name">${esc(name)}</div>
       </div>
@@ -157,7 +172,7 @@ function bodyFinished(t) {
     ? `<div class="cell__result-name">Hasil imbang</div>`
     : `
       <div class="cell__result-winner">
-        ${plateHTML(winner, 'cell__result-logo')}
+        ${plateHTML(winner, 'cell__result-logo', 'eager')}
         <div class="cell__result-name">${esc(winner)}</div>
       </div>
     `;
@@ -231,7 +246,6 @@ export function syncRatio() {
   if (vt) vt.dataset.ratio = ratio;
   const btn = document.getElementById('btn-ratio');
   if (btn) btn.textContent = (ratio === 'fill') ? '1:1' : 'Isi layar';
-  requestAnimationFrame(renderDisplay);
 }
 
 export function toggleFullscreen() {
@@ -274,8 +288,8 @@ export function initDisplay() {
   subscribe(() => {
     syncVtMode();
     syncRatio();
-    renderDisplay();
-  });
+    scheduleDisplayRender();
+  }, { immediate: false });
 
   /* Tombol kontrol */
   document.getElementById('btn-vtmode')?.addEventListener('click', async () => {
@@ -303,5 +317,8 @@ export function initDisplay() {
   });
 
   /* Resize → re-fit text */
-  window.addEventListener('resize', () => requestAnimationFrame(renderDisplay));
+  window.addEventListener('resize', scheduleDisplayRender);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) scheduleDisplayRender();
+  });
 }

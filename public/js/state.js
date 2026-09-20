@@ -143,13 +143,20 @@ let state = defaultState();
 let ready = false;
 let sseConnection = null;
 let currentUser = null;
+let pollTimer = 0;
+let pollingStarted = false;
+let broadcastChannel = null;
+let acceptBroadcast = false;
+
+const STATE_CACHE_KEY = `${STORE_KEY}_public_cache`;
+const STATE_CACHE_MAX_AGE = 6 * 60 * 60 * 1000;
 
 const listeners = new Set();
 const readyResolvers = [];
 
-export function subscribe(fn) {
+export function subscribe(fn, { immediate = true } = {}) {
   listeners.add(fn);
-  if (ready) { try { fn(state); } catch (e) {} }
+  if (ready && immediate) { try { fn(state); } catch (e) {} }
   return () => listeners.delete(fn);
 }
 
@@ -169,7 +176,11 @@ function markReady() {
   readyResolvers.length = 0;
 }
 
-export function replaceState(next, { force = false } = {}) {
+export function replaceState(next, {
+  force = false,
+  persist = true,
+  broadcast = true,
+} = {}) {
   if (!next || typeof next !== 'object') return;
   next.loaded ||= {};
   next.results ||= {};
@@ -206,33 +217,136 @@ export function replaceState(next, { force = false } = {}) {
   }
 
   state = next;
+  if (persist) savePublicCache(next);
   markReady();
   notify();
+  if (broadcast) publishPublicState(next);
+}
+
+function publicSnapshot(source) {
+  return {
+    version: source.version,
+    updatedAt: source.updatedAt,
+    activeMeja: source.activeMeja,
+    ratio: source.ratio,
+    vtMode: source.vtMode,
+    loaded: {},
+    results: {},
+    tables: (source.tables || []).map(({ logs, ...table }) => ({
+      ...table,
+      logs: [],
+    })),
+  };
+}
+
+function savePublicCache(source) {
+  if (typeof localStorage === 'undefined' || !Array.isArray(source?.tables)) return;
+  try {
+    localStorage.setItem(STATE_CACHE_KEY, JSON.stringify({
+      cachedAt: Date.now(),
+      state: publicSnapshot(source),
+    }));
+  } catch {}
+}
+
+function loadPublicCache() {
+  if (typeof localStorage === 'undefined') return null;
+  try {
+    const cached = JSON.parse(localStorage.getItem(STATE_CACHE_KEY) || 'null');
+    if (!cached?.state || !Number.isFinite(cached.cachedAt)) return null;
+    if (Date.now() - cached.cachedAt > STATE_CACHE_MAX_AGE) return null;
+    return cached.state;
+  } catch {
+    return null;
+  }
+}
+
+/* BroadcastChannel membuat Admin/Controller dan Display/TV di browser yang
+   sama tersinkron langsung. Hanya snapshot publik yang dikirim; halaman
+   berprivilege tidak menerima snapshot ini agar data admin tidak terpotong. */
+function initBroadcastSync({ accept = false } = {}) {
+  acceptBroadcast ||= accept;
+  if (broadcastChannel || typeof window === 'undefined' ||
+      typeof window.BroadcastChannel !== 'function') return;
+  try {
+    broadcastChannel = new window.BroadcastChannel(`${STORE_KEY}_state`);
+    broadcastChannel.addEventListener('message', event => {
+      if (!acceptBroadcast || !event.data) return;
+      replaceState(event.data, { persist: true, broadcast: false });
+    });
+  } catch {
+    broadcastChannel = null;
+  }
+}
+
+function publishPublicState(source) {
+  if (!broadcastChannel) return;
+  try { broadcastChannel.postMessage(publicSnapshot(source)); } catch {}
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    INIT
    ═══════════════════════════════════════════════════════════════════════════ */
 
-export async function initState() {
+async function loadInitialState() {
   try {
     const s = await api.fetchState();
-    replaceState(s);
+    /* Server selalu sumber kebenaran, termasuk setelah storage restart. */
+    replaceState(s, { force: true });
   } catch (e) {
     console.error('[state] gagal fetch state:', e);
     markReady();
+  }
+}
+
+export async function initState({ eager = false, poll = true } = {}) {
+  initBroadcastSync({ accept: eager });
+  if (eager) {
+    const cached = loadPublicCache();
+    if (cached) replaceState(cached, { force: true, persist: false, broadcast: false });
+    else markReady();
+
+    /* Display/TV langsung render; state server menyusul tanpa memblokir UI. */
+    void loadInitialState();
+  } else {
+    await loadInitialState();
   }
 
   /* TODO Fase 5: aktifkan SSE */
   // connectSSE();
 
-  /* Sementara: poll 3 detik */
-  setInterval(async () => {
+  if (poll) startPolling();
+}
+
+export function startStatePolling() {
+  startPolling();
+}
+
+/* Poll berantai mencegah request menumpuk ketika Blob/network sedang lambat.
+   Tab background diperlambat supaya beberapa controller + admin + display
+   tidak membanjiri function secara bersamaan. */
+function startPolling() {
+  if (pollingStarted) return;
+  pollingStarted = true;
+
+  const delay = () => document.hidden ? 12000 : 3000;
+  const poll = async () => {
     try {
       const s = await api.fetchState();
       replaceState(s);
     } catch {}
-  }, 3000);
+    pollTimer = window.setTimeout(poll, delay());
+  };
+
+  const schedule = (ms = delay()) => {
+    clearTimeout(pollTimer);
+    pollTimer = window.setTimeout(poll, ms);
+  };
+
+  document.addEventListener('visibilitychange', () => {
+    schedule(document.hidden ? delay() : 0);
+  });
+  schedule();
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

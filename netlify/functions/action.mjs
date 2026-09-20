@@ -28,10 +28,15 @@ export default async (req) => {
   const methodErr = requireMethod(req, 'POST');
   if (methodErr) return methodErr;
 
-  const user = await getUser(req);
+  /* Pembacaan session, body, dan state tidak saling bergantung. Menjalankannya
+     paralel memangkas satu round-trip Blob pada setiap klik operator. */
+  const [user, body, stateGuard] = await Promise.all([
+    getUser(req),
+    readJSON(req),
+    loadStateForUpdate(),
+  ]);
   if (!user) return forbidden('Login diperlukan');
 
-  const body = await readJSON(req);
   if (!body) return badRequest('Body JSON tidak valid');
 
   const { type, version, ...payload } = body;
@@ -40,7 +45,6 @@ export default async (req) => {
     return badRequest('Field "version" wajib berupa bilangan bulat');
   }
 
-  const stateGuard = await loadStateForUpdate();
   let state = stateGuard.state;
   if (!state) state = defaultState();
   state.loaded ||= {};

@@ -23,6 +23,8 @@ let openPopSide = null;
 let draftSets = [];
 let submitting = false;
 let clockStarted = false;
+let renderFrame = 0;
+let renderedTableKey = '';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    INIT
@@ -37,7 +39,10 @@ export function initController(meja) {
 
   renderAll();
   startClock();
-  subscribe(() => renderAll());
+  subscribe(scheduleRenderAll, { immediate: false });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) scheduleRenderAll();
+  });
 
   document.addEventListener('click', e => {
     if (!e.target.closest('.ctl-team__pick')) closeTeamPop();
@@ -48,6 +53,17 @@ export function initController(meja) {
       if (openPopSide) { closeTeamPop(); return; }
       if (activeCatIndex !== null) { closeActiveCat(); return; }
     }
+  });
+}
+
+function scheduleRenderAll() {
+  if (document.hidden) return;
+  const nextKey = JSON.stringify(getTable(assignedMeja) || null);
+  if (nextKey === renderedTableKey) return;
+  if (renderFrame) return;
+  renderFrame = requestAnimationFrame(() => {
+    renderFrame = 0;
+    renderAll();
   });
 }
 
@@ -66,8 +82,13 @@ function startClock() {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 function renderAll() {
+  if (renderFrame) {
+    cancelAnimationFrame(renderFrame);
+    renderFrame = 0;
+  }
   const t = getTable(assignedMeja);
   if (!t) return;
+  renderedTableKey = JSON.stringify(t);
 
   /* Kalau belum ada kategori aktif, pilih pertama yang pending + init draft */
   if (activeCatIndex === null) {

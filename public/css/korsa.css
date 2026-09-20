@@ -1040,9 +1040,9 @@ img { max-width: 100%; display: block; }
 .vt__grid[data-layout="3"] .cell { --logo-size: clamp(38px, 7.2vmin, 88px);  --name-size: clamp(34px, 7vmin, 82px); --score-size: clamp(42px, 7.6vmin, 98px); }
 .vt__grid[data-layout="3"] > :first-child { --logo-size: clamp(46px, 9vmin, 112px);  --name-size: clamp(42px, 8vmin, 96px); --score-size: clamp(56px, 11vmin, 138px); }
 .vt__grid[data-layout="2"] .cell {
-  --logo-size: clamp(46px, 7vmin, 84px);
-  --name-size: clamp(38px, 5.5vmin, 66px);
-  --score-size: clamp(54px, 8.2vmin, 98px);
+  --logo-size: clamp(54px, 8.5vmin, 104px);
+  --name-size: clamp(48px, 7.4vmin, 86px);
+  --score-size: clamp(64px, 9.6vmin, 112px);
 }
 .vt__grid[data-layout="1"] .cell { --logo-size: clamp(68px, 16vmin, 210px); --name-size: clamp(58px, 9.5vmin, 126px); --score-size: clamp(90px, 20vmin, 260px); }
 

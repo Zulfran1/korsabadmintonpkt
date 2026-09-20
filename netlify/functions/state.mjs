@@ -23,7 +23,9 @@ export default async (req) => {
   const methodErr = requireMethod(req, 'GET');
   if (methodErr) return methodErr;
 
-  let state = await loadState();
+  /* Pengguna terautentikasi membutuhkan state + session. Baca keduanya
+     bersamaan agar polling dashboard tidak membayar dua latency berurutan. */
+  let [state, user] = await Promise.all([loadState(), getUser(req)]);
 
   /* Kalau belum ada state sama sekali → kirim default */
   if (!state) {
@@ -53,7 +55,6 @@ export default async (req) => {
     }
   }
 
-  const user = await getUser(req);
   return ok(user ? state : toPublicState(state));
 };
 

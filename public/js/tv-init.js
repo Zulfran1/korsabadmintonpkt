@@ -5,7 +5,7 @@ async function main() {
   const params = new URLSearchParams(location.search);
   const meja = Number(params.get('meja')) || 1;
 
-  await initState();
+  await initState({ eager: true });
   await whenReady();
 
   initTV(meja);

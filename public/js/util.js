@@ -28,11 +28,13 @@ export function monogram(name) {
 }
 
 /* ── Plate logo: gambar kalau ada, monogram kalau tidak ─────────────────── */
-export function plateHTML(name, cls = '') {
+export function plateHTML(name, cls = '', priority = 'lazy') {
   const src = LOGOS[normalize(name)];
   if (src) {
+    const eager = priority === 'eager';
     return `<div class="plate ${esc(cls)}">` +
-           `<img src="${esc(src)}" alt="" loading="lazy" decoding="async"></div>`;
+           `<img src="${esc(src)}" alt="" loading="${eager ? 'eager' : 'lazy'}" ` +
+           `decoding="async"${eager ? ' fetchpriority="high"' : ''}></div>`;
   }
   return `<div class="plate plate--mono ${esc(cls)}">${esc(monogram(name))}</div>`;
 }

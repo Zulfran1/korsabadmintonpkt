@@ -3,6 +3,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { login as apiLogin, logout as apiLogout, me as apiMe } from './api.js';
+import { KORSA_ON_LIGHT } from './config.js';
 import { esc, toast } from './util.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -15,7 +16,7 @@ export function renderLoginScreen(target, { onSuccess } = {}) {
     <div class="login-screen">
       <div class="login-card">
         <div class="login-brand">
-          <img src="assets/logos/korsa-on-light.png" alt="KORSA 2026">
+          <img src="${esc(KORSA_ON_LIGHT)}" alt="KORSA 2026" decoding="async">
         </div>
         <h1 class="login-title">Masuk</h1>
         <p class="login-sub">Gunakan akun yang diberikan panitia</p>

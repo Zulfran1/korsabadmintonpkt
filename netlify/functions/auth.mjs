@@ -107,13 +107,14 @@ export default async (req) => {
   }
 
   /* ── Login sukses ───────────────────────────────────────────────────── */
-  await clearLoginAttempts(ip);
-
-  const { token } = await createSession({
-    username: account.username,
-    role: account.role,
-    meja: account.meja,
-  });
+  const [, { token }] = await Promise.all([
+    clearLoginAttempts(ip),
+    createSession({
+      username: account.username,
+      role: account.role,
+      meja: account.meja,
+    }),
+  ]);
 
   const res = ok({
     user: {

@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    CONTROLLER INIT
    ═══════════════════════════════════════════════════════════════════════════ */
-import { initState, setCurrentUser, whenReady } from './state.js';
+import { initState, setCurrentUser, startStatePolling, whenReady } from './state.js';
 import {
   initController,
   renderControllerHeader,
@@ -12,6 +12,10 @@ import { requireSession, renderUserChip } from './auth.js';
 async function main() {
   const params = new URLSearchParams(location.search);
   const meja = Number(params.get('meja')) || 1;
+
+  /* Fetch state berjalan paralel dengan pengecekan sesi untuk memangkas
+     startup pada jaringan seluler/Netlify cold start. */
+  const stateReady = initState({ poll: false });
 
   /* Izinkan admin & operator. Cek role dilakukan manual di bawah. */
   const user = await requireSession({
@@ -29,9 +33,10 @@ async function main() {
     return;
   }
 
-  /* Init state dari server */
-  await initState();
+  /* Tunggu state yang sudah dimulai di atas. */
+  await stateReady;
   await whenReady();
+  startStatePolling();
 
   /* Render UI */
   renderControllerHeader();
