@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="id" data-mode="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — KORSA 2026 Bulu Tangkis</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/korsa.css">
+</head>
+<body>
+
+<div class="admin-layout" id="admin-layout" data-sidebar="open">
+
+  <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <img class="sidebar__logo" id="sidebar-logo" alt="KORSA 2026">
+      <div class="sidebar__brand-text">
+        <div class="sidebar__title">KORSA 2026</div>
+        <div class="sidebar__subtitle">Bulu Tangkis</div>
+      </div>
+    </div>
+
+    <nav class="sidebar__nav" id="sidebar-nav">
+      <!-- Dirender oleh JS -->
+    </nav>
+
+    <div class="sidebar__foot">
+      <div class="sidebar__user">
+        <div class="sidebar__avatar">A</div>
+        <div class="sidebar__user-info">
+          <div class="sidebar__user-name">ADMIN</div>
+          <div class="sidebar__user-meta">KORSA 2026</div>
+        </div>
+      </div>
+      <button class="sidebar__logout" id="btn-logout" type="button" data-role="logout" title="Keluar">
+        <span aria-hidden="true">⎋</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════ MAIN ═══════════════════ -->
+  <main class="admin-main">
+
+    <header class="admin-topbar">
+      <button class="admin-topbar__toggle" id="toggle-sidebar" type="button" title="Toggle Sidebar">
+        <span aria-hidden="true">☰</span>
+      </button>
+
+      <div class="admin-topbar__title" id="admin-tab-title">Lapangan</div>
+
+      <div class="admin-topbar__tools">
+        <div class="admin-topbar__meja">
+          <span class="u-eyebrow">Lapangan aktif</span>
+          <div class="segmented" id="table-count" role="group" aria-label="Jumlah lapangan aktif"></div>
+        </div>
+
+        <div class="clock u-num" id="clock">00:00:00</div>
+
+        <button class="btn btn--accent" id="btn-display" type="button">
+          <svg class="btn__svg" viewBox="0 0 20 20" aria-hidden="true">
+            <rect x="1.5" y="3" width="17" height="11.5" rx="1.5" fill="none"
+                  stroke="currentColor" stroke-width="1.8"/>
+            <path d="M6.5 17.5h7" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round"/>
+          </svg>
+          <span class="btn__text">Buka Display</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="admin-content" id="admin-content">
+      <!-- Tab: Meja -->
+      <div class="board" id="board" data-count="4"></div>
+
+      <!-- Tab: Klasemen -->
+      <div id="standings-content" class="tab-content" hidden></div>
+
+      <!-- Tab: Jadwal -->
+      <div id="schedule-content" class="tab-content" hidden></div>
+
+      <!-- Tab: Display -->
+      <div id="display-content" class="tab-content" hidden></div>
+
+      <!-- Tab: TV -->
+      <div id="tv-content" class="tab-content" hidden></div>
+
+      <!-- Tab: Pengaturan -->
+      <div id="settings-content" class="tab-content" hidden></div>
+    </div>
+
+  </main>
+
+</div>
+
+<datalist id="team-names"></datalist>
+
+<script type="module" src="js/admin-init.js"></script>
+
+</body>
+</html>

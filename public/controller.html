@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id" data-mode="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controller — KORSA 2026 Bulu Tangkis</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/korsa.css">
+</head>
+<body>
+
+<div id="app" data-aside="open">
+
+  <header class="appbar">
+    <div class="brand">
+      <img class="brand__logo" id="brand-logo" alt="KORSA 2026">
+      <div class="brand__rule"></div>
+      <div>
+        <div class="brand__title" id="brand-title">SCORING BULU TANGKIS</div>
+        <div class="brand__meta" id="brand-meta">GOR Pupuk Kaltim · 21–28 September 2026</div>
+      </div>
+    </div>
+
+    <div class="appbar__tools">
+      <div class="clock u-num" id="clock">00:00:00</div>
+      <div class="user-chip" id="user-chip">
+        <span class="user-chip__avatar">M</span>
+        <span>LAPANGAN 1</span>
+      </div>
+      <button class="btn btn--outline" id="btn-preview" type="button">
+        <span class="btn__icon">◱</span> Pratinjau
+      </button>
+      <button class="btn btn--outline" type="button" data-role="logout" title="Keluar">
+        <span class="btn__icon">⎋</span> Keluar
+      </button>
+    </div>
+  </header>
+
+  <div class="ctl-layout">
+
+    <!-- KIRI: Papan Skor -->
+    <main class="ctl-main" id="ctl-main">
+      <!-- Dirender oleh controller.js -->
+    </main>
+
+    <!-- KANAN: Daftar Kategori -->
+    <aside class="ctl-aside" id="ctl-aside">
+      <!-- Dirender oleh controller.js -->
+    </aside>
+
+  </div>
+
+</div>
+
+<datalist id="team-names"></datalist>
+
+<script type="module" src="js/controller-init.js"></script>
+
+</body>
+</html>

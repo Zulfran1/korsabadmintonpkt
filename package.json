@@ -1,0 +1,26 @@
+{
+  "name": "korsa-badminton",
+  "version": "1.0.0",
+  "description": "Scoring bulu tangkis KORSA 2026",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "node --env-file=.env ./node_modules/netlify-cli/bin/run.js dev",
+    "test": "node --test",
+    "check": "node tools/check-project.mjs && node --test",
+    "check:env": "node tools/check-env.mjs",
+    "hash": "node tools/hash-password.mjs",
+    "predeploy": "npm run check && npm run check:env",
+    "deploy": "netlify deploy --prod"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^10.7.12",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "netlify-cli": "^27.8.0"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

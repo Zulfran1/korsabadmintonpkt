@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="id" data-mode="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Display — KORSA 2026 Bulu Tangkis</title>
+<link rel="stylesheet" href="css/korsa.css">
+</head>
+<body>
+
+<div id="display" data-open="true" data-vt-mode="dark">
+
+  <div class="vt__controls">
+    <button class="btn" id="btn-vtmode" type="button">☀ Mode Terang</button>
+    <button class="btn" id="btn-ratio" type="button">1:1</button>
+    <button class="btn" id="btn-fullscreen" type="button">⛶ Layar Penuh</button>
+    <button class="btn" id="btn-close" type="button">✕ Tutup</button>
+  </div>
+
+  <div class="vt" id="vt" data-ratio="fill">
+
+    <header class="vt__head">
+      <img class="vt__logo" id="vt-logo" alt="KORSA 2026">
+      <div class="vt__event"></div>
+      <div class="vt__clock u-num" id="vt-clock">00:00:00</div>
+    </header>
+
+    <div class="vt__grid" id="vt-grid" data-layout="4"></div>
+
+    <footer class="vt__foot"></footer>
+
+  </div>
+
+</div>
+
+<script type="module" src="js/display-init.js"></script>
+
+</body>
+</html>

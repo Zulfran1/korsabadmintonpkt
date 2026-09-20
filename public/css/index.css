@@ -1,0 +1,31 @@
+html, body { height: 100%; margin: 0; }
+body {
+  display: grid;
+  place-items: center;
+  background: #0a0f2e;
+  color: #fff;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+}
+a { color: #f26b21; text-decoration: none; }
+.box { text-align: center; padding: 24px; }
+.box h1 { font-size: 20px; margin: 0 0 8px; letter-spacing: 0.06em; }
+.box p { margin: 6px 0; opacity: 0.7; font-size: 13px; }
+.box .links {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.box .links a {
+  padding: 8px 16px;
+  border: 1px solid #6c7fd8;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: background 0.15s;
+}
+.box .links a:hover { background: rgb(108 127 216 / 20%); }

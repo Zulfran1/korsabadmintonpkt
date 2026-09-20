@@ -1,0 +1,13 @@
+# Local Netlify folder
+.netlify
+
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+test-login.json
+
+# Dependencies and generated output
+node_modules/
+coverage/
+*.log
