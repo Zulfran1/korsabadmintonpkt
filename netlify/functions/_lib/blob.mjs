@@ -20,6 +20,13 @@ let blobsBroken = false;
 let blobWarningShown = false;
 
 function memoryFallbackAllowed() {
+  /* `node --test` dijalankan juga pada Netlify Build, tempat NETLIFY=true
+     tetapi context Blob Functions memang belum tersedia. Izinkan fallback
+     hanya di worker test; runtime Functions production tetap fail closed. */
+  const isTestRunner = Boolean(process.env.NODE_TEST_CONTEXT)
+    || process.execArgv.includes('--test')
+    || process.argv.includes('--test');
+  if (isTestRunner) return true;
   const isHostedNetlify = String(process.env.NETLIFY).toLowerCase() === 'true'
     && String(process.env.NETLIFY_DEV).toLowerCase() !== 'true';
   return !isHostedNetlify && process.env.NODE_ENV !== 'production';
