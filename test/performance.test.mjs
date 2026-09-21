@@ -50,7 +50,9 @@ test('startup halaman berprivilege tidak menunggu session dan state secara seria
     assert.match(source, /await stateReady;[\s\S]*?await whenReady\(\);[\s\S]*?startStatePolling\(\)/);
   }
   assert.equal((tv.match(/startClock\(\);/g) || []).length, 1);
-  assert.match(tv, /if \(document\.hidden\)[\s\S]*?cancelAnimationFrame\(scrollRAF\)/);
+  assert.match(tv, /const contentHeight = inner\.scrollHeight \/ 2/);
+  assert.match(tv, /SCROLL_SPEED_PX_S \* \(dt \/ 1000\)/);
+  assert.doesNotMatch(tv, /if \(document\.hidden\)[\s\S]*?scrollRAF = null/);
 });
 
 test('function membaca session dan state secara paralel', async () => {

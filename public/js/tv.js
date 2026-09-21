@@ -12,11 +12,12 @@ import { esc, plateHTML, clockText } from './util.js';
 let assignedMeja = null;
 let clockTimer = null;
 let scrollRAF = null;
+let scrollSetupFrame = null;
 let scrollPauseUntil = 0;
 let renderedTableKey = '';
 let renderFrame = 0;
 
-const SCROLL_SPEED = 0.5;      // pixel per frame (~30px/detik @60fps)
+const SCROLL_SPEED_PX_S = 42;  // cukup terlihat di layar besar, tetap nyaman dibaca
 const LOOP_PAUSE_MS = 2000;    // pause di akhir sebelum loop
 const UPDATE_PAUSE_MS = 4000;  // pause setelah update state nyata
 
@@ -40,11 +41,6 @@ export function initTV(meja) {
 
   window.addEventListener('resize', scheduleTVRender);
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      if (scrollRAF) cancelAnimationFrame(scrollRAF);
-      scrollRAF = null;
-      return;
-    }
     scheduleTVRender();
   });
 
@@ -83,7 +79,6 @@ export function initTV(meja) {
 }
 
 function scheduleTVRender() {
-  if (document.hidden) return;
   if (renderFrame) return;
   renderFrame = requestAnimationFrame(() => {
     renderFrame = 0;
@@ -156,7 +151,8 @@ function renderTV() {
     }
   `;
 
-  requestAnimationFrame(() => setupAutoScroll());
+  if (scrollSetupFrame) cancelAnimationFrame(scrollSetupFrame);
+  scrollSetupFrame = requestAnimationFrame(() => setupAutoScroll());
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -164,6 +160,7 @@ function renderTV() {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 function setupAutoScroll() {
+  scrollSetupFrame = null;
   /* Cancel RAF lama */
   if (scrollRAF) {
     cancelAnimationFrame(scrollRAF);
@@ -176,23 +173,19 @@ function setupAutoScroll() {
 
   const originalHTML = inner.innerHTML;
   const originalCount = inner.children.length;
+  if (!originalCount) return;
+
+  viewport.scrollTop = 0;
 
   /* Duplikat konten biar loop seamless */
   inner.innerHTML = originalHTML + originalHTML;
 
   /* Tunggu layout settle sebelum ukur */
   requestAnimationFrame(() => {
-    const children = Array.from(inner.children);
-    const firstCycle = children.slice(0, originalCount);
-
-    /* Hitung tinggi satu putaran */
-    const contentHeight = firstCycle.reduce((sum, el) => {
-      const style = getComputedStyle(el);
-      const mt = parseFloat(style.marginTop) || 0;
-      const mb = parseFloat(style.marginBottom) || 0;
-      return sum + el.offsetHeight + mt + mb;
-    }, 0);
-
+    /* Setelah konten diduplikasi, setengah scrollHeight adalah tinggi satu
+       siklus yang sebenarnya. Ini ikut menghitung border, gap, dan perubahan
+       layout browser TV tanpa bergantung pada pembulatan tiap kartu. */
+    const contentHeight = inner.scrollHeight / 2;
     const viewportHeight = viewport.clientHeight;
 
     /* Kalau konten muat, tidak perlu scroll */
@@ -209,13 +202,9 @@ function startScrollLoop(viewport, contentHeight) {
   let lastTs = performance.now();
 
   /* Delay awal sebelum mulai scroll */
-  scrollPauseUntil = Date.now() + 1500;
+  scrollPauseUntil = Date.now() + 1000;
 
   function step(ts) {
-    if (document.hidden) {
-      scrollRAF = null;
-      return;
-    }
     const dt = Math.min(64, ts - lastTs);
     lastTs = ts;
 
@@ -225,7 +214,7 @@ function startScrollLoop(viewport, contentHeight) {
       return;
     }
 
-    const delta = SCROLL_SPEED * (dt / 16.67);
+    const delta = SCROLL_SPEED_PX_S * (dt / 1000);
     const nextTop = viewport.scrollTop + delta;
 
     /* Loop mulus: scrollTop geser sebesar contentHeight tanpa animasi */
